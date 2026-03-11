@@ -10,7 +10,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-import { ROOMS_TR, ROOMS_EN } from '@/data/rooms';
+import { ROOMS_TR, ROOMS_EN, ROOMS_DE, ROOMS_FR, ROOMS_RU } from '@/data/rooms';
 
 type Room = typeof ROOMS_TR[0] & { calculatedPrice?: number };
 
@@ -99,7 +99,16 @@ function BookPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { language, t } = useLanguage();
-  const ALL_ROOMS = language === 'tr' ? ROOMS_TR : ROOMS_EN;
+  const ALL_ROOMS = (() => {
+    switch (language) {
+      case 'tr': return ROOMS_TR;
+      case 'en': return ROOMS_EN;
+      case 'de': return ROOMS_DE;
+      case 'fr': return ROOMS_FR;
+      case 'ru': return ROOMS_RU;
+      default: return ROOMS_EN;
+    }
+  })();
 
   const paramCheckIn  = searchParams.get('checkIn')  ?? '';
   const paramCheckOut = searchParams.get('checkOut') ?? '';
@@ -341,8 +350,12 @@ function BookPageContent() {
       <div className="relative z-10 bg-white/90 backdrop-blur border-t border-gray-200 mt-auto">
         {/* Links */}
         <div className="flex justify-center gap-6 py-3 text-xs text-gray-500">
-          {['Gizlilik ve Güvenlik','Çerez Politikası','KVKK Politikası'].map(l=>(
-            <a key={l} href="#" className="hover:text-orange-500 transition-colors">{l}</a>
+          {[
+            { label: t('link_privacy'), key: 'privacy' },
+            { label: t('link_cookie'), key: 'cookie' },
+            { label: t('link_kvkk_policy'), key: 'kvkk' }
+          ].map(item => (
+            <a key={item.key} href="#" className="hover:text-orange-500 transition-colors">{item.label}</a>
           ))}
         </div>
 

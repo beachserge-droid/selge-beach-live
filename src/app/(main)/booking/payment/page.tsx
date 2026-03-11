@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Wifi, Lock, ShieldCheck, CheckCircle, XCircle, ArrowLeft, CreditCard } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import { ROOMS_TR, ROOMS_EN, ROOMS_DE, ROOMS_FR, ROOMS_RU } from '@/data/rooms';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Step = 'card' | 'processing' | 'sms' | 'verifying' | 'success' | 'failed';
@@ -34,7 +36,8 @@ function maskDisplay(raw: string) {
 
 // ─── 3D Animated Card ─────────────────────────────────────────────────────────
 function LiveCard({ card, flipped }: { card: CardData; flipped: boolean }) {
-  const t = detectType(card.number.replace(/\D/g,''));
+  const { t } = useLanguage();
+  const cardType = detectType(card.number.replace(/\D/g,''));
   return (
     <div style={{ perspective: '1200px' }} className="w-full max-w-sm mx-auto select-none mb-6">
       <div className="relative w-full" style={{ height:210, transformStyle:'preserve-3d', transform: flipped?'rotateY(180deg)':'rotateY(0deg)', transition:'transform .65s ease' }}>
@@ -52,9 +55,9 @@ function LiveCard({ card, flipped }: { card: CardData; flipped: boolean }) {
             </div>
             <div className="flex items-center gap-3">
               <Wifi size={16} className="text-white/40 rotate-90"/>
-              {t==='visa' && <span className="text-2xl font-black italic tracking-wider text-white">VISA</span>}
-              {t==='mc' && <div className="flex -space-x-3"><div className="w-8 h-8 rounded-full bg-red-500 opacity-90"/><div className="w-8 h-8 rounded-full bg-yellow-400 opacity-90"/></div>}
-              {(t==='amex'||t==='other') && <div className="w-9 h-7 rounded border border-white/30 flex items-center justify-center"><span className="text-[8px] text-white/60 font-bold tracking-wider">KART</span></div>}
+              {cardType==='visa' && <span className="text-2xl font-black italic tracking-wider text-white">VISA</span>}
+              {cardType==='mc' && <div className="flex -space-x-3"><div className="w-8 h-8 rounded-full bg-red-500 opacity-90"/><div className="w-8 h-8 rounded-full bg-yellow-400 opacity-90"/></div>}
+              {(cardType==='amex'||cardType==='other') && <div className="w-9 h-7 rounded border border-white/30 flex items-center justify-center"><span className="text-[8px] text-white/60 font-bold tracking-wider">KART</span></div>}
             </div>
           </div>
           <div className="font-mono text-[1.15rem] font-bold tracking-[0.2em] text-white/95 relative">
@@ -62,11 +65,11 @@ function LiveCard({ card, flipped }: { card: CardData; flipped: boolean }) {
           </div>
           <div className="flex justify-between items-end relative">
             <div>
-              <div className="text-[8px] uppercase tracking-widest text-white/40 mb-0.5">Kart Sahibi</div>
-              <div className="text-sm font-bold tracking-wider uppercase text-white/90 truncate max-w-[190px]">{card.name||'AD SOYAD'}</div>
+              <div className="text-[8px] uppercase tracking-widest text-white/40 mb-0.5">{t('payment_card_holder')}</div>
+              <div className="text-sm font-bold tracking-wider uppercase text-white/90 truncate max-w-[190px]">{card.name||t('payment_card_preview_holder')}</div>
             </div>
             <div className="text-right">
-              <div className="text-[8px] uppercase tracking-widest text-white/40 mb-0.5">Son Kul.</div>
+              <div className="text-[8px] uppercase tracking-widest text-white/40 mb-0.5">{t('payment_card_preview_expiry')}</div>
               <div className="text-sm font-bold font-mono text-white/90">{card.expMonth||'——'}/{card.expYear||'——'}</div>
             </div>
           </div>
@@ -80,7 +83,7 @@ function LiveCard({ card, flipped }: { card: CardData; flipped: boolean }) {
             <div className="bg-white/90 rounded px-4 py-2 text-right font-mono font-bold text-gray-800 tracking-[0.4em]">{card.cvc||'•••'}</div>
           </div>
           <div className="absolute bottom-5 right-6 opacity-25 text-white">
-            {t==='visa' && <span className="text-xl font-black italic">VISA</span>}
+            {cardType==='visa' && <span className="text-xl font-black italic">VISA</span>}
           </div>
         </div>
       </div>
@@ -90,6 +93,7 @@ function LiveCard({ card, flipped }: { card: CardData; flipped: boolean }) {
 
 // ─── Processing Spinner ────────────────────────────────────────────────────────
 function ProcessingScreen({ label }: { label: string }) {
+  const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center justify-center py-24 text-white">
       <div className="relative mb-8">
@@ -101,7 +105,7 @@ function ProcessingScreen({ label }: { label: string }) {
         </div>
       </div>
       <p className="font-bold text-base text-white/90 mb-1">{label}</p>
-      <p className="text-sm text-white/40">Lütfen bekleyin...</p>
+      <p className="text-sm text-white/40">{t('payment_wait')}</p>
     </div>
   );
 }
@@ -129,16 +133,34 @@ function Ring({ s, total }: { s: number; total: number }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 function PaymentContent() {
+  const { t, language } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const roomId    = searchParams.get('roomId');
-  const roomName  = searchParams.get('roomName');
-  const totalPrice= searchParams.get('totalPrice');
-  const checkIn   = searchParams.get('checkIn');
-  const checkOut  = searchParams.get('checkOut');
-  const adults    = searchParams.get('adults');
-  const children  = searchParams.get('children');
+  const roomId    = searchParams.get('roomId')     || '1';
+  const totalPrice= searchParams.get('totalPrice') || '0';
+  const adults    = parseInt(searchParams.get('adults')   || '2', 10);
+  const children  = parseInt(searchParams.get('children') || '0', 10);
+  const checkIn   = searchParams.get('checkIn')    || '';
+  const checkOut  = searchParams.get('checkOut')   || '';
+
+  const ALL_ROOMS = (() => {
+    switch (language) {
+      case 'tr': return ROOMS_TR;
+      case 'en': return ROOMS_EN;
+      case 'de': return ROOMS_DE;
+      case 'fr': return ROOMS_FR;
+      case 'ru': return ROOMS_RU;
+      default: return ROOMS_EN;
+    }
+  })();
+
+  const getRoomData = (id: string) => {
+    return ALL_ROOMS.find(r => r.id.toString() === id) || ALL_ROOMS[0];
+  };
+
+  const roomData = getRoomData(roomId);
+  const roomName = roomData.title;
 
   const [step, setStep] = useState<Step>('card');
   const [flipped, setFlipped] = useState(false);
@@ -248,17 +270,17 @@ function PaymentContent() {
             <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-100">
               <CheckCircle className="text-emerald-500 w-12 h-12"/>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Ödeme Başarılı</h1>
-            <p className="text-gray-500 text-sm mb-6">İşleminiz başarıyla gerçekleştirildi.</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{t('payment_success')}</h1>
+            <p className="text-gray-500 text-sm mb-6">{t('payment_success_desc')}</p>
             <div className="bg-gray-50 rounded-2xl p-5 text-left space-y-3 mb-6">
-              <Row2 k="Rezervasyon No" v={resNo} mono/>
-              <Row2 k="Oda" v={roomName??''}/>
-              <Row2 k="Tarih" v={`${checkIn} → ${checkOut}`}/>
-              <Row2 k="Tutar" v={`${Number(totalPrice).toLocaleString('tr-TR')} TL`} green/>
+              <Row2 k={t('payment_pnr')} v={resNo} mono/>
+              <Row2 k={t('payment_room')} v={roomName??''}/>
+              <Row2 k={t('payment_date')} v={`${checkIn} → ${checkOut}`}/>
+              <Row2 k={t('payment_total')} v={`${Number(totalPrice).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US')} TRY`} green/>
             </div>
-            <p className="text-xs text-gray-400 mb-6">Onay bilgileri {card.email} adresine gönderilecektir.</p>
+            <p className="text-xs text-gray-400 mb-6">{t('email_info').replace('{email}', card.email)}</p>
             <button onClick={()=>router.push('/')} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold text-sm tracking-widest hover:bg-gray-700 transition-colors">
-              Ana Sayfaya Dön
+              {t('nav_home')}
             </button>
           </div>
         </div>
@@ -276,15 +298,15 @@ function PaymentContent() {
             <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-red-100">
               <XCircle className="text-red-500 w-12 h-12"/>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">İşlem Reddedildi</h1>
-            <p className="text-gray-500 text-sm mb-8">Ödeme işleminiz tamamlanamadı. Kart bilgilerinizi kontrol edip tekrar deneyebilirsiniz.</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{t('payment_failed')}</h1>
+            <p className="text-gray-500 text-sm mb-8">{t('payment_failed_desc')}</p>
             <div className="flex gap-3">
               <button onClick={()=>{setStep('card');setOtp('');setShakeOtp(false);setSmsTimer(180);}}
                 className="flex-1 border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-bold text-sm hover:border-gray-400 transition-colors">
-                Tekrar Dene
+                {t('payment_try_again')}
               </button>
               <button onClick={()=>router.push('/booking')} className="flex-1 bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-700 transition-colors">
-                Geri Dön
+                {t('checkout_back')}
               </button>
             </div>
           </div>
@@ -313,12 +335,12 @@ function PaymentContent() {
                 {/* Header */}
                 <div className="px-8 pt-8 pb-6 border-b border-gray-50 flex items-center justify-between">
                   <div>
-                    <h1 className="text-xl font-bold text-gray-900">Güvenli Ödeme</h1>
-                    <p className="text-sm text-gray-400 mt-0.5">Kart bilgilerinizi güvenle giriniz</p>
+                    <h1 className="text-xl font-bold text-gray-900">{t('payment_3d_challenge')}</h1>
+                    <p className="text-sm text-gray-400 mt-0.5">{t('payment_card_number')}</p>
                   </div>
                   <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
                     <Lock size={12} className="text-green-600"/>
-                    <span className="text-xs font-bold text-green-700">SSL Güvenli</span>
+                    <span className="text-xs font-bold text-green-700">SSL {t('nav_general')}</span>
                   </div>
                 </div>
 
@@ -329,7 +351,7 @@ function PaymentContent() {
                   <form onSubmit={submitCard} className="space-y-4">
                     {/* Card Number */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">Kart Numarası</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">{t('payment_card_number')}</label>
                       <div className="relative">
                         <input type="text" required placeholder="0000  0000  0000  0000"
                           value={card.number} maxLength={19}
@@ -346,8 +368,8 @@ function PaymentContent() {
 
                     {/* Name */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">Kart Sahibinin Adı</label>
-                      <input type="text" required placeholder="AD SOYAD"
+                      <label className="block text-xs font-semibold text-gray-500 mb-1.5">{t('payment_card_holder')}</label>
+                      <input type="text" required placeholder={t('payment_card_preview_holder')}
                         value={card.name}
                         onChange={e => setCard({...card, name:e.target.value.toUpperCase()})}
                         className="w-full border border-gray-200 rounded-xl px-4 py-3 uppercase tracking-wider text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder-gray-300"/>
@@ -356,13 +378,13 @@ function PaymentContent() {
                     {/* Expiry + CVC */}
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1.5">Ay</label>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1.5">{t('payment_month')}</label>
                         <input type="text" required placeholder="AA" maxLength={2}
                           value={card.expMonth} onChange={e=>setCard({...card,expMonth:e.target.value.replace(/\D/g,'')})}
                           className="w-full border border-gray-200 rounded-xl px-3 py-3 text-center font-mono font-bold text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"/>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1.5">Yıl</label>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1.5">{t('payment_year')}</label>
                         <input type="text" required placeholder="YY" maxLength={2}
                           value={card.expYear} onChange={e=>setCard({...card,expYear:e.target.value.replace(/\D/g,'')})}
                           className="w-full border border-gray-200 rounded-xl px-3 py-3 text-center font-mono font-bold text-gray-800 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"/>
@@ -379,7 +401,7 @@ function PaymentContent() {
 
                     {/* Contact */}
                     <div className="pt-2 border-t border-gray-50">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">İletişim Bilgileri</p>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{t('payment_contact_info')}</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1.5">E-posta</label>
@@ -399,7 +421,7 @@ function PaymentContent() {
                     {/* Submit */}
                     <button type="submit"
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-sm tracking-wider transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 mt-2">
-                      <Lock size={15}/> Güvenli Ödemeye Devam Et
+                      <Lock size={15}/> {t('payment_proceed_btn')}
                     </button>
 
                     {/* Trust badges */}
@@ -422,7 +444,7 @@ function PaymentContent() {
                   <Lock size={13} className="text-gray-400"/>
                   <span className="font-mono text-xs text-gray-400">secure.payment-gateway.com/3ds/v2/auth</span>
                 </div>
-                <ProcessingScreen label="Banka ile güvenli bağlantı kuruluyor"/>
+                <ProcessingScreen label={t('payment_processing')}/>
               </div>
             )}
 
@@ -460,9 +482,9 @@ function PaymentContent() {
 
                   {/* Message */}
                   <div className="w-full max-w-xs bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 text-left">
-                    <p className="text-xs text-blue-600 font-semibold mb-1">Bilgi</p>
+                    <p className="text-xs text-blue-600 font-semibold mb-1">{t('payment_3d_info')}</p>
                     <p className="text-sm text-gray-700">
-                      <span className="font-bold">{card.phone}</span> numaralı telefonunuza 6 haneli doğrulama kodu gönderilmiştir.
+                      {t('payment_sms_sent').replace('{phone}', card.phone)}
                     </p>
                   </div>
 
@@ -495,7 +517,7 @@ function PaymentContent() {
 
                     <button type="submit" disabled={otp.length < 6}
                       className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white py-3.5 rounded-xl font-bold text-sm tracking-wider transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-100">
-                      <ShieldCheck size={15}/> Doğrula
+                      <ShieldCheck size={15}/> {t('payment_verify_btn')}
                     </button>
 
                     <div className="flex items-center justify-center gap-4 mt-5 text-xs text-gray-400">
@@ -526,17 +548,17 @@ function PaymentContent() {
           <div className="w-full lg:w-[300px] shrink-0">
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden sticky top-32">
               <div className="px-6 py-5 border-b border-gray-50">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Sipariş Özeti</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">{t('co_order_summary')}</p>
                 <h3 className="font-bold text-gray-900">{roomName}</h3>
               </div>
               <div className="px-6 py-5 space-y-3 text-sm">
-                <SRow k="Giriş" v={checkIn??'—'}/>
-                <SRow k="Çıkış" v={checkOut??'—'}/>
-                <SRow k="Misafir" v={`${adults} Yetişkin${Number(children)>0?`, ${children} Çocuk`:''}`}/>
+                <SRow k={t('check_in')} v={checkIn??'—'}/>
+                <SRow k={t('check_out')} v={checkOut??'—'}/>
+                <SRow k={t('payment_room')} v={`${adults} ${t('nav_accommodation')}`}/>
                 <div className="border-t border-gray-100 pt-4 mt-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Toplam</span>
-                    <span className="text-xl font-black text-gray-900">{Number(totalPrice).toLocaleString('tr-TR')} <span className="text-sm font-normal text-gray-400">TL</span></span>
+                    <span className="text-gray-500">{t('payment_total')}</span>
+                    <span className="text-xl font-black text-gray-900">{Number(totalPrice).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US')} <span className="text-sm font-normal text-gray-400">TRY</span></span>
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
@@ -575,8 +597,9 @@ function SRow({ k, v }: { k: string; v: string }) {
 
 // Wrapper with Suspense for useSearchParams
 export default function PaymentPage() {
+  const { t } = useLanguage();
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-900"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div><p className="mt-4 text-gray-400">Yükleniyor...</p></div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-900"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div><p className="mt-4 text-gray-400">{t('loading')}</p></div></div>}>
       <PaymentContent />
     </Suspense>
   );

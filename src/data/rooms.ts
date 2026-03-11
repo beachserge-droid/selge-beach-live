@@ -231,3 +231,180 @@ export const ROOMS_EN = [
     })
   }))
 ];
+
+export const ROOMS_DE = [
+  ...ROOMS_TR.map((r) => ({
+    ...r,
+    title: {
+      'jakuzi-suite-oda': 'Jacuzzi Suite Zimmer',
+      'deluxe-aile-odasi-deniz-manzara': 'Deluxe Familienzimmer Meerblick',
+      'deluxe-aile-odasi-kara-manzara': 'Deluxe Familienzimmer Landblick',
+      'deluxe-oda-deniz-manzara': 'Deluxe Zimmer Meerblick',
+      'deluxe-oda-kara-manzara': 'Deluxe Zimmer Landblick',
+      'standart-aile-odasi-deniz-manzara': 'Standard Familienzimmer Meerblick',
+      'standart-oda-deniz-manzara': 'Standard Zimmer Meerblick',
+      'standart-aile-odasi-kara-manzara': 'Standard Familienzimmer Landblick',
+      'standart-oda-kara-manzara': 'Standard Zimmer Landblick'
+    }[r.slug] || r.title,
+    desc: {
+      'jakuzi-suite-oda': 'Die perfekte Kombination aus Luxus und Romantik. Ein großzügiger Wohnbereich und Ihr privater Whirlpool erwarten Sie.',
+      'deluxe-aile-odasi-deniz-manzara': 'Atemberaubender Meerblick und extra Komfort für Ihre Familie. Zwei Schlafzimmer mit Verbindungstür.',
+      'deluxe-aile-odasi-kara-manzara': 'Geräumiges und komfortables Deluxe-Zimmer für Ihre Familie, begleitet von faszinierenden Naturausblicken.',
+      'deluxe-oda-deniz-manzara': 'Einzigartige Eleganz und der faszinierende Ausblick auf das Mittelmeer vereint.',
+      'deluxe-oda-kara-manzara': 'Elegante und komfortable Deluxe-Unterkunft mit Landblick, gestaltet in entspannenden Farben.',
+      'standart-aile-odasi-deniz-manzara': 'Familienzimmer mit Meerblick und Verbindungstür für angenehme gemeinsame Zeit.',
+      'standart-oda-deniz-manzara': 'Standardzimmer, die das einzigartige Blau des Mittelmeers in Ihr Zimmer bringen.',
+      'standart-aile-odasi-kara-manzara': 'Ideal für einen wirtschaftlichen und komfortablen Familienurlaub mit schönem Gartenblick.',
+      'standart-oda-kara-manzara': 'Ruhige Zimmer mit schlichter Dekoration und Natur- oder teilweisem Gartenblick.'
+    }[r.slug] || r.desc,
+    view: r.view.includes('Deniz') ? 'Meerblick' : 'Landblick',
+    bedType: r.bedType
+      .replace('Çift Kişilik Büyük Yatak', 'Großes Doppelbett')
+      .replace('Çift Kişilik Yatak', 'Doppelbett')
+      .replace('Tek Kişilik Yatak', 'Einzelbett')
+      .replace('veya', 'oder'),
+    features: r.features.map(f => {
+      const translations: Record<string, string> = {
+        'Jakuzi': 'Whirlpool',
+        'Ara Kapılı İki Oda': 'Zwei Zimmer mit Verbindungstür',
+        'Deniz Manzara': 'Meerblick',
+        'Kara Manzara': 'Landblick',
+        'Klima': 'Klimaanlage',
+        'LCD TV': 'LCD-Fernseher',
+        '2 Adet LCD TV': '2 LCD-Fernseher',
+        'Minibar': 'Minibar',
+        'Ücretsiz WiFi': 'Kostenloses WLAN',
+        'Balkon': 'Balkon',
+        'Oturma Alanı': 'Sitzbereich',
+        'Emanet Kasası': 'Safe',
+        'Çay/Kahve Seti': 'Tee-/Kaffeeset',
+        'Bornoz & Terlik': 'Bademantel & Hausschuhe',
+        'Modern Tasarım': 'Modernes Design',
+        'Makyaj Aynası': 'Schminkspiegel',
+        'Saç Kurutma Makinesi': 'Haartrockner',
+        'Çocuklara Uygun': 'Kinderfreundlich',
+        'Kompakt Tasarım': 'Kompaktes Design',
+        'Seramik/Parıltılı Zemin': 'Keramikboden'
+      };
+      return translations[f] || f;
+    })
+  }))
+];
+
+export const ROOMS_FR = [
+  ...ROOMS_TR.map((r) => ({
+    ...r,
+    title: {
+      'jakuzi-suite-oda': 'Chambre Suite Jacuzzi',
+      'deluxe-aile-odasi-deniz-manzara': 'Chambre Familiale Deluxe Vue Mer',
+      'deluxe-aile-odasi-kara-manzara': 'Chambre Familiale Deluxe Vue Terre',
+      'deluxe-oda-deniz-manzara': 'Chambre Deluxe Vue Mer',
+      'deluxe-oda-kara-manzara': 'Chambre Deluxe Vue Terre',
+      'standart-aile-odasi-deniz-manzara': 'Chambre Familiale Standard Vue Mer',
+      'standart-oda-deniz-manzara': 'Chambre Standard Vue Mer',
+      'standart-aile-odasi-kara-manzara': 'Chambre Familiale Standard Vue Terre',
+      'standart-oda-kara-manzara': 'Chambre Standard Vue Terre'
+    }[r.slug] || r.title,
+    desc: {
+      'jakuzi-suite-oda': 'Le mélange parfait entre luxe et romantisme. Un espace de vie spacieux et votre jacuzzi privé vous attendent.',
+      'deluxe-aile-odasi-deniz-manzara': 'Vue imprenable sur la mer et confort supplémentaire pour votre famille. Deux chambres communicantes.',
+      'deluxe-aile-odasi-kara-manzara': 'Chambre deluxe spacieuse et confortable pour votre famille, avec des vues fascinantes sur la nature.',
+      'deluxe-oda-deniz-manzara': 'Allie élégance unique et vue fascinante sur la Méditerranée.',
+      'deluxe-oda-kara-manzara': 'Hébergement deluxe élégant et confortable avec vue sur la terre, conçu dans des couleurs relaxantes.',
+      'standart-aile-odasi-deniz-manzara': 'Chambre familiale vue mer communicante pour passer des moments agréables en famille.',
+      'standart-oda-deniz-manzara': 'Chambres standard qui apportent le bleu unique de la Méditerranée dans votre chambre.',
+      'standart-aile-odasi-kara-manzara': 'Idéal pour des vacances en famille économiques et confortables avec de belles vues sur le jardin.',
+      'standart-oda-kara-manzara': 'Chambres paisibles avec une décoration simple et des vues sur la nature ou le jardin.'
+    }[r.slug] || r.desc,
+    view: r.view.includes('Deniz') ? 'Vue Mer' : 'Vue Terre',
+    bedType: r.bedType
+      .replace('Çift Kişilik Büyük Yatak', 'Grand lit double')
+      .replace('Çift Kişilik Yatak', 'Lit double')
+      .replace('Tek Kişilik Yatak', 'Lit simple')
+      .replace('veya', 'ou'),
+    features: r.features.map(f => {
+      const translations: Record<string, string> = {
+        'Jakuzi': 'Jacuzzi',
+        'Ara Kapılı İki Oda': 'Deux chambres communicantes',
+        'Deniz Manzara': 'Vue Mer',
+        'Kara Manzara': 'Vue Terre',
+        'Klima': 'Climatisation',
+        'LCD TV': 'Téléviseur LCD',
+        '2 Adet LCD TV': '2 téléviseurs LCD',
+        'Minibar': 'Minibar',
+        'Ücretsiz WiFi': 'Wi-Fi gratuit',
+        'Balkon': 'Balcon',
+        'Oturma Alanı': 'Coin salon',
+        'Emanet Kasası': 'Coffre-fort',
+        'Çay/Kahve Seti': 'Set thé/café',
+        'Bornoz & Terlik': 'Peignoir & chaussons',
+        'Modern Tasarım': 'Design moderne',
+        'Makyaj Aynası': 'Miroir de maquillage',
+        'Saç Kurutma Makinesi': 'Sèche-cheveux',
+        'Çocuklara Uygun': 'Adapté aux enfants',
+        'Kompakt Tasarım': 'Design compact',
+        'Seramik/Parıltılı Zemin': 'Sol en céramique'
+      };
+      return translations[f] || f;
+    })
+  }))
+];
+
+export const ROOMS_RU = [
+  ...ROOMS_TR.map((r) => ({
+    ...r,
+    title: {
+      'jakuzi-suite-oda': 'Номер Люкс с Джакузи',
+      'deluxe-aile-odasi-deniz-manzara': 'Семейный Делюкс с видом на море',
+      'deluxe-aile-odasi-kara-manzara': 'Семейный Делюкс с видом на сушу',
+      'deluxe-oda-deniz-manzara': 'Номер Делюкс с видом на море',
+      'deluxe-oda-kara-manzara': 'Номер Делюкс с видом на сушу',
+      'standart-aile-odasi-deniz-manzara': 'Стандартный семейный с видом на море',
+      'standart-oda-deniz-manzara': 'Стандартный номер с видом на море',
+      'standart-aile-odasi-kara-manzara': 'Стандартный семейный с видом на сушу',
+      'standart-oda-kara-manzara': 'Стандартный номер с видом на сушу'
+    }[r.slug] || r.title,
+    desc: {
+      'jakuzi-suite-oda': 'Идеальное сочетание роскоши и романтики. Вас ждет просторная гостиная и собственное джакузи.',
+      'deluxe-aile-odasi-deniz-manzara': 'Ослепительный вид на море и дополнительный комфорт для вашей семьи. Две спальни со смежной дверью.',
+      'deluxe-aile-odasi-kara-manzara': 'Просторный и комфортабельный номер делюкс для вашей семьи в окружении завораживающих видов на природу.',
+      'deluxe-oda-deniz-manzara': 'Сочетание уникальной элегантности и завораживающего вида на Средиземное море.',
+      'deluxe-oda-kara-manzara': 'Элегантный и комфортабельный номер делюкс с видом на сушу, оформленный в расслабляющих тонах.',
+      'standart-aile-odasi-deniz-manzara': 'Смежный семейный номер с видом на море для приятного времяпрепровождения всей семьей.',
+      'standart-oda-deniz-manzara': 'Стандартные номера, которые приносят уникальную синеву Средиземного моря в ваш номер.',
+      'standart-aile-odasi-kara-manzara': 'Идеально подходит для экономичного и комфортного семейного отдыха с прекрасным видом на сад.',
+      'standart-oda-kara-manzara': 'Тихие номера с простым декором и видом на природу или частичным видом на сад.'
+    }[r.slug] || r.desc,
+    view: r.view.includes('Deniz') ? 'Вид на море' : 'Вид на сушу',
+    bedType: r.bedType
+      .replace('Çift Kişilik Büyük Yatak', 'Большая двуспальная кровать')
+      .replace('Çift Kişilik Yatak', 'Двуспальная кровать')
+      .replace('Tek Kişilik Yatak', 'Односпальная кровать')
+      .replace('veya', 'или'),
+    features: r.features.map(f => {
+      const translations: Record<string, string> = {
+        'Jakuzi': 'Джакузи',
+        'Ara Kapılı İki Oda': 'Две комнаты со смежной дверью',
+        'Deniz Manzara': 'Вид на море',
+        'Kara Manzara': 'Вид на сушу',
+        'Klima': 'Кондиционер',
+        'LCD TV': 'ЖК-телевизор',
+        '2 Adet LCD TV': '2 ЖК-телевизора',
+        'Minibar': 'Мини-бар',
+        'Ücretsiz WiFi': 'Бесплатный Wi-Fi',
+        'Balkon': 'Балкон',
+        'Oturma Alanı': 'Зона отдыха',
+        'Emanet Kasası': 'Сейф',
+        'Çay/Kahve Seti': 'Набор для чая/кофе',
+        'Bornoz & Terlik': 'Халат и тапочки',
+        'Modern Tasarım': 'Modern Design',
+        'Makyaj Aynası': 'Косметическое зеркало',
+        'Saç Kurutma Makinesi': 'Фен',
+        'Çocuklara Uygun': 'Подходит для детей',
+        'Kompakt Tasarım': 'Compact Design',
+        'Seramik/Parıltılı Zemin': 'Керамический пол'
+      };
+      return translations[f] || f;
+    })
+  }))
+];

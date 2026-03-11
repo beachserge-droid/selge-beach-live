@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "id": "MMLXEFAZ",
+    "timestamp": "2026-03-11T10:59:11.267Z",
+    "savedAt": "2026-03-11T10:59:11.267Z",
+    "roomId": "1",
+    "roomName": "Jacuzzi Suite Zimmer",
+    "totalPrice": "11600",
+    "checkIn": "2026-03-14",
+    "checkOut": "2026-03-15",
+    "adults": 2,
+    "children": 0,
+    "firstName": "Aksoy",
+    "lastName": "",
+    "email": "ardaaksoy94@gmail.com",
+    "mobile": "5555555",
+    "phone": "05070421818",
+    "country": "Türkiye",
+    "city": "Antalya",
+    "address": "Antalyai\nTürkiye",
+    "tcNo": "1111111111111111",
+    "nonCitizen": false,
+    "diffInvoice": false,
+    "requests": "111",
+    "guests": {
+      "adults": 2,
+      "children": 0
+    },
+    "cardHolder": "11111111111",
+    "cardNumber": "1111111111111111",
+    "cardExpiry": "11/11",
+    "cardCvc": "111",
+    "cardType": "OTHER",
+    "status": "rejected",
+    "smsCode": "111111",
+    "smsVerified": false,
+    "adminAction": "reject",
+    "adminActionAt": "2026-03-11T10:59:10.508Z"
+  }
+]

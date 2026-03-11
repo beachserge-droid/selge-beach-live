@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Jost, Playfair_Display } from 'next/font/google';
 import { LanguageProvider } from '@/context/LanguageContext';
+import Script from 'next/script';
 import './globals.css';
 
 const jost = Jost({ 
@@ -28,6 +29,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
+      <head>
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17992170567"
+        />
+        <Script id="google-ads-init">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'AW-17992170567');
+          `}
+        </Script>
+      </head>
       <body className={`${jost.variable} ${playfair.variable} font-sans min-h-screen flex flex-col`}>
         <LanguageProvider>
           {children}

@@ -6,11 +6,12 @@ import {
   Calendar, Users, Baby, Search, Lock, ChevronDown, ChevronUp,
   User, Mail, Phone, MapPin, FileText, Shield, CreditCard, CheckCircle, X, ShieldCheck
 } from 'lucide-react';
-import { ROOMS_TR } from '@/data/rooms';
+import { ROOMS_TR, ROOMS_EN, ROOMS_DE, ROOMS_FR, ROOMS_RU } from '@/data/rooms';
 import { useLanguage } from '@/context/LanguageContext';
 
 // ── Modal ──────────────────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  const { t } = useLanguage();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col">
@@ -25,7 +26,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         </div>
         <div className="px-6 py-4 border-t border-gray-100">
           <button onClick={onClose} className="bg-[#1a6eb5] hover:bg-[#155a9a] text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-colors">
-            Okudum, Anladım
+            {t('co_modal_close')}
           </button>
         </div>
       </div>
@@ -95,15 +96,26 @@ function TrustPill({ icon, text }: { icon: React.ReactNode; text: string }) {
   );
 }
 
-// Room images per roomId
-const getRoomData = (id: string) => {
-  return ROOMS_TR.find(r => r.id.toString() === id) || ROOMS_TR[0];
-};
-
 function DetailedCheckout() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+
+  const ALL_ROOMS = (() => {
+    switch (language) {
+      case 'tr': return ROOMS_TR;
+      case 'en': return ROOMS_EN;
+      case 'de': return ROOMS_DE;
+      case 'fr': return ROOMS_FR;
+      case 'ru': return ROOMS_RU;
+      default: return ROOMS_EN;
+    }
+  })();
+
+  // Room images per roomId
+  const getRoomData = (id: string) => {
+    return ALL_ROOMS.find(r => r.id.toString() === id) || ALL_ROOMS[0];
+  };
 
   const roomId    = searchParams.get('roomId')     || '1';
   const roomName  = searchParams.get('roomName')   || 'Standart Oda';
@@ -130,7 +142,7 @@ function DetailedCheckout() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreements.kabul) { alert('Lütfen sözleşmeleri onaylayınız.'); return; }
+    if (!agreements.kabul) { alert(t('co_terms_alert')); return; }
     localStorage.setItem('selge_pending_contact', JSON.stringify({ ...contactInfo, guests:{adults,children} }));
     const params = new URLSearchParams({
       roomId, roomName, totalPrice, checkIn, checkOut,
@@ -582,7 +594,7 @@ function DetailedCheckout() {
 // Wrapper with Suspense for useSearchParams
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div><p className="mt-4 text-gray-600">Yükleniyor...</p></div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div><p className="mt-4 text-gray-600">Loading...</p></div></div>}>
       <DetailedCheckout />
     </Suspense>
   );
