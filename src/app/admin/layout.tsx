@@ -27,16 +27,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       try {
         const res = await fetch('/api/reservations');
         const reservations = await res.json() as Record<string, unknown>[];
+        
         // Play sound on ANY new active reservation (card arrived OR SMS entered)
         const activeCount = reservations.filter((r) =>
           r.status === 'awaiting_sms' || r.status === 'card_submitted' || r.status === 'sms_entered'
         ).length;
 
         if (activeCount > lastCount) {
-          audio?.play().catch(() => {/* browser blocked autoplay */});
+          console.log('Heartbeat - New active reservation(s) detected. Playing sound...');
+          audio?.play().catch((err) => {
+            console.warn('Heartbeat - Audio play blocked or failed:', err.message);
+          });
         }
         lastCount = activeCount;
-      } catch { /* silent */ }
+      } catch (err: any) { 
+        console.error('Heartbeat - Error:', err.message);
+      }
     }, 2000);
 
     return () => clearInterval(interval);

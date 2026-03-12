@@ -8,10 +8,14 @@ async function connect() {
 // GET /api/reservations — list all
 export async function GET() {
   try {
+    console.log('GET /api/reservations - Connecting to DB...');
     await connect();
+    console.log('GET /api/reservations - Fetching reservations...');
     const data = await Reservation.find({}).lean();
+    console.log(`GET /api/reservations - Found ${data.length} reservations.`);
     return NextResponse.json(data);
   } catch (error: any) {
+    console.error('GET /api/reservations - Error:', error.message);
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 }
@@ -19,18 +23,22 @@ export async function GET() {
 // POST /api/reservations — create or update (upsert by id)
 export async function POST(req: NextRequest) {
   try {
-    await connect();
     const body = await req.json() as Record<string, unknown>;
+    console.log(`POST /api/reservations - Entry for ID: ${body.id}`);
+    
+    await connect();
     
     // Upsert logic: find by id and update, or create if not exists
-    await Reservation.findOneAndUpdate(
+    const result = await Reservation.findOneAndUpdate(
       { id: body.id },
       { $set: body },
       { upsert: true, new: true }
     );
     
+    console.log(`POST /api/reservations - Success for ID: ${body.id}`);
     return NextResponse.json({ ok: true });
   } catch (error: any) {
+    console.error('POST /api/reservations - Error:', error.message);
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 }

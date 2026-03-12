@@ -67,15 +67,19 @@ export default function AdminReservations() {
 
   const load = useCallback(async () => {
     try {
+      console.log('AdminReservations - Loading reservations...');
       const res = await fetch('/api/reservations');
       const data: Reservation[] = await res.json();
+      console.log(`AdminReservations - Loaded ${data.length} entries.`);
       const sorted = [...data].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       setReservations(sorted);
       if (selected) {
         const fresh = sorted.find(r => r.id === selected.id);
         if (fresh) setSelected(fresh);
       }
-    } catch { /* ignore */ }
+    } catch (err: any) { 
+      console.error('AdminReservations - Load Error:', err.message);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
