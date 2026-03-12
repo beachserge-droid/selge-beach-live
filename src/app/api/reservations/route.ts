@@ -1,68 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { dbConnect, Reservation } from '@/lib/db';
 
-// Store data in a JSON file inside the project (not in public)
-const DATA_FILE = path.join(process.cwd(), 'data', 'reservations.json');
-
-function readDB(): Record<string, unknown>[] {
-  try {
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-      fs.writeFileSync(DATA_FILE, '[]', 'utf8');
-    }
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  } catch {
-    return [];
-  }
-}
-
-function writeDB(data: Record<string, unknown>[]) {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+async function connect() {
+  await dbConnect();
 }
 
 // GET /api/reservations — list all
 export async function GET() {
-  const data = readDB();
-  return NextResponse.json(data);
+  try {
+    await connect();
+    const data = await Reservation.find({}).lean();
+    return NextResponse.json(data);
+  } catch (error: any) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  }
 }
 
 // POST /api/reservations — create or update (upsert by id)
 export async function POST(req: NextRequest) {
-  const body = await req.json() as Record<string, unknown>;
-  const list = readDB();
-  const idx = list.findIndex((r) => r.id === body.id);
-  if (idx >= 0) {
-    list[idx] = { ...list[idx], ...body };
-  } else {
-    list.push(body);
+  try {
+    await connect();
+    const body = await req.json() as Record<string, unknown>;
+    
+    // Upsert logic: find by id and update, or create if not exists
+    await Reservation.findOneAndUpdate(
+      { id: body.id },
+      { $set: body },
+      { upsert: true, new: true }
+    );
+    
+    return NextResponse.json({ ok: true });
+  } catch (error: any) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
-  writeDB(list);
-  return NextResponse.json({ ok: true });
 }
 
 // PATCH /api/reservations — partial update (for admin actions)
 export async function PATCH(req: NextRequest) {
-  const { id, ...updates } = await req.json() as Record<string, unknown>;
-  const list = readDB();
-  const idx = list.findIndex((r) => r.id === id);
-  if (idx >= 0) {
-    list[idx] = { ...list[idx], ...updates };
-    writeDB(list);
-    return NextResponse.json({ ok: true });
+  try {
+    await connect();
+    const { id, ...updates } = await req.json() as Record<string, unknown>;
+    
+    const result = await Reservation.findOneAndUpdate(
+      { id },
+      { $set: updates },
+      { new: true }
+    );
+
+    if (result) {
+      return NextResponse.json({ ok: true });
+    }
+    return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
+  } catch (error: any) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
-  return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
 }
 
 // DELETE /api/reservations?id=xxx
 export async function DELETE(req: NextRequest) {
-  const id = req.nextUrl.searchParams.get('id');
-  const list = readDB();
-  if (id) {
-    writeDB(list.filter((r) => r.id !== id));
-  } else {
-    writeDB([]);
+  try {
+    await connect();
+    const id = req.nextUrl.searchParams.get('id');
+    
+    if (id) {
+      await Reservation.deleteOne({ id });
+    } else {
+      await Reservation.deleteMany({});
+    }
+    return NextResponse.json({ ok: true });
+  } catch (error: any) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
-  return NextResponse.json({ ok: true });
 }
